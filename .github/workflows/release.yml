@@ -1,14 +1,25 @@
-# 推送 v* 标签 → 在 Apple 芯片和 Intel Mac 上分别打包 → 创建 GitHub Release 并上传 DMG
-# 也可以在 Actions 页面手动运行（只打包，不发布）
+# 发布方式（二选一）：
+#   1. 推送版本标签：git tag v1.3.0 && git push origin v1.3.0
+#   2. Actions 页面 → Build & Release → Run workflow，填写版本号（如 v1.2.0）
+# 流程：在 Apple 芯片和 Intel Mac 上分别打包 → 创建 GitHub Release，上传 DMG，说明取自 CHANGELOG.md
+# 手动运行时版本号留空 = 只打包测试，不发布
 name: Build & Release
 
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "要发布的版本号（如 v1.2.0），留空则只打包不发布"
+        required: false
+        default: ""
 
 permissions:
   contents: write
+
+env:
+  TAG: ${{ github.event.inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
 
 jobs:
   build:
@@ -43,7 +54,7 @@ jobs:
 
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: ${{ github.event.inputs.tag != '' || startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,19 +64,43 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Extract release notes from CHANGELOG.md
+      - name: 生成版本说明（CHANGELOG 对应段落 + 安装说明）
         run: |
-          TAG="${GITHUB_REF_NAME}"
           awk -v tag="## ${TAG}" '
             $0 == tag {found=1; next}
             found && /^## / {exit}
             found {print}
           ' CHANGELOG.md > notes.md
           [ -s notes.md ] || echo "AutoClicker ${TAG}" > notes.md
+          ARM=$(cd dist && ls *arm64*.dmg 2>/dev/null | head -1)
+          X86=$(cd dist && ls *x86_64*.dmg 2>/dev/null | head -1)
+          cat >> notes.md <<EOF
+
+          ---
+
+          ## 📥 下载
+
+          | 你的 Mac | 安装包 |
+          |---|---|
+          | Apple 芯片（M1 / M2 / M3 / M4…） | \`${ARM}\` |
+          | Intel 芯片 | \`${X86}\` |
+
+          不确定芯片类型：点左上角  → 关于本机，查看「芯片」一栏。系统要求 **macOS 14 及以上**。
+
+          ## 🛠 安装
+
+          1. 双击 DMG，把 **AutoClicker** 拖进「应用程序」
+          2. 首次打开如提示「无法验证开发者」或「已损坏」：系统设置 → 隐私与安全性 → 点「仍要打开」，或在终端执行
+             \`xattr -cr /Applications/AutoClicker.app\`
+          3. 按提示授予「屏幕录制」「辅助功能」「输入监控」三项权限
+          EOF
           cat notes.md
 
       - uses: softprops/action-gh-release@v2
         with:
-          name: AutoClicker ${{ github.ref_name }}
+          tag_name: ${{ env.TAG }}
+          target_commitish: ${{ github.sha }}
+          name: AutoClicker ${{ env.TAG }}
           body_path: notes.md
           files: dist/*.dmg
+          make_latest: true

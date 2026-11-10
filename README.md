@@ -120,14 +120,16 @@ bash build_mac.command
 
 ### 发布新版本
 
-推送 `v*` 标签后，GitHub Actions 会自动在 Apple 芯片和 Intel 两种 Mac 上打包，并创建 Release 上传 DMG：
+1. 在 [CHANGELOG.md](CHANGELOG.md) 顶部按「新增 / 优化 / 修复」写好新版本说明（标题格式 `## v1.3.0`）
+2. 二选一触发发布：
+   - 推送版本标签：
+     ```bash
+     git tag -a v1.3.0 -m "AutoClicker v1.3.0"
+     git push origin v1.3.0
+     ```
+   - 或在 GitHub → Actions → **Build & Release** → **Run workflow**，填写版本号
 
-```bash
-git tag v1.2.0
-git push origin v1.2.0
-```
-
-版本说明取自 [CHANGELOG.md](CHANGELOG.md) 中对应版本的段落。
+GitHub Actions 会在 Apple 芯片和 Intel 两种 Mac 上分别打包，自动创建 Release、上传 DMG，并附上该版本的更新说明和安装说明。
 
 ## 📁 项目结构
 
