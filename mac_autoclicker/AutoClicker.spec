@@ -46,7 +46,7 @@ app = BUNDLE(
         "CFBundleDisplayName": "图像识别点击器",
         "CFBundleShortVersionString": APP_VERSION,
         "CFBundleVersion": APP_VERSION,
-        "LSMinimumSystemVersion": "11.0",
+        "LSMinimumSystemVersion": "14.0",
         "NSHighResolutionCapable": True,
         "LSApplicationCategoryType": "public.app-category.utilities",
         "NSAppleEventsUsageDescription": "用于自动化控制前台软件。",
