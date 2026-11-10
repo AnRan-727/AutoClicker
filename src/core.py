@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""识别与执行引擎（与界面无关）：截图、模板匹配、点击、循环调度"""
+"""识别与执行引擎（与界面、系统无关）：截图、模板匹配、点击、循环调度"""
 import os
 import sys
 import threading
@@ -10,14 +10,11 @@ import cv2
 import numpy as np
 import pyautogui
 
-APP_NAME = "AutoClicker"
-APP_VERSION = "1.2.0"
-if getattr(sys, "frozen", False):
-    # 打包成 .app 后，配置和模板放到用户目录（App 内部只读且会破坏签名）
-    APP_DIR = os.path.expanduser(f"~/Library/Application Support/{APP_NAME}")
-else:
-    APP_DIR = os.path.dirname(os.path.abspath(__file__))
-os.makedirs(APP_DIR, exist_ok=True)
+from version import APP_NAME, APP_VERSION
+import platforms
+
+# 配置和模板目录：mac ~/Library/Application Support/AutoClicker，Windows %APPDATA%\\AutoClicker
+APP_DIR = platforms.data_dir()
 TPL_DIR = os.path.join(APP_DIR, "templates")
 CFG_PATH = os.path.join(APP_DIR, "config.json")
 os.makedirs(TPL_DIR, exist_ok=True)

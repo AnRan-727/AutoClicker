@@ -11,17 +11,22 @@
 __pycache__/
 *.pyc
 
-# 打包产物（由 build_mac.command 生成）
+# 打包产物（由 build_mac.command / build_win.ps1 生成）
 mac_autoclicker/build/
 mac_autoclicker/dist/
 mac_autoclicker/assets/
+mac_autoclicker/.venv-build/
+windows_autoclicker/build/
+windows_autoclicker/dist/
+windows_autoclicker/assets/
+windows_autoclicker/.venv-build/
+*.exe
 *.dmg
 *.zip
 
 # 用户数据（运行时生成）
-mac_autoclicker/config.json
-mac_autoclicker/templates/*
-!mac_autoclicker/templates/.gitkeep
+src/config.json
+src/templates/
 
 # Claude 导出的临时文件
 Claude outputs/

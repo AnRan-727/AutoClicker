@@ -200,8 +200,8 @@ def to_spec(keycode, flags):
 class KeyRecorder:
     """在本软件窗口内捕获下一次按键（吞掉该按键，不会输入到其它控件）。主线程调用。"""
 
-    def __init__(self, on_key):
-        self.on_key = on_key       # on_key(keycode, modifier_flags)
+    def __init__(self, on_key, widget=None):
+        self.on_key = on_key       # on_key(keycode, modifier_flags)；widget 仅 Windows 使用
         self._monitor = None
         self._handler = None
 
@@ -227,3 +227,26 @@ class KeyRecorder:
                 pass
         self._monitor = None
         self._handler = None
+
+
+# ---------------------------------------------------------------- 界面文案 / 显示
+MOD_HINT = "需要配合 ⌃ ⌥ ⇧ ⌘ 使用（F1~F12 可单独用）"
+LOCAL_HINT = "请在 系统设置 → 隐私与安全性 → 输入监控 中打开 AutoClicker"
+
+_MOD_SYMBOLS = {"ctrl": "⌃", "control": "⌃", "shift": "⇧", "alt": "⌥", "option": "⌥", "opt": "⌥",
+                "cmd": "⌘", "command": "⌘"}
+_KEY_SYMBOLS = {"esc": "Esc", "escape": "Esc", "enter": "↩", "return": "↩", "tab": "⇥", "space": "Space",
+                "backspace": "⌫", "delete": "⌫", "left": "←", "right": "→", "up": "↑", "down": "↓"}
+
+
+def pretty(spec):
+    """'<ctrl>+<shift>+s' → '⌃⇧S'（按 macOS 习惯 ⌃⌥⇧⌘ 排序）"""
+    order = {"⌃": 0, "⌥": 1, "⇧": 2, "⌘": 3}
+    mods, keys = [], []
+    for p in spec.split("+"):
+        n = p.strip().strip("<>").lower()
+        if n in _MOD_SYMBOLS:
+            mods.append(_MOD_SYMBOLS[n])
+        elif n:
+            keys.append(_KEY_SYMBOLS.get(n, n.upper()))
+    return "".join(sorted(set(mods), key=order.get)) + "".join(keys)

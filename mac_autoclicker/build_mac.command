@@ -1,12 +1,13 @@
 #!/bin/bash
-# 一键打包：生成 dist/AutoClicker.app 和 dist/AutoClicker-<版本>-<架构>.dmg
+# macOS 一键打包：源码在 ../src（与 Windows 共用），生成 dist/AutoClicker.app 和 dist/AutoClicker-<版本>-<架构>.dmg
 # 用法：在终端执行  bash build_mac.command
 set -euo pipefail
 # 固定 UTF-8，避免中文紧贴变量时被当成变量名的一部分
 export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 cd "$(dirname "$0")"
 
-VERSION="1.2.0"
+# 版本号从共享源码 ../src/version.py 读取
+VERSION="$(sed -n 's/^APP_VERSION *= *"\(.*\)"/\1/p' ../src/version.py)"
 ARCH="$(uname -m)"
 APP="dist/AutoClicker.app"
 DMG="dist/AutoClicker-${VERSION}-${ARCH}.dmg"
@@ -94,10 +95,10 @@ source .venv-build/bin/activate
 python -m pip install -q -U pip
 
 echo "==> 3/6 安装依赖（会被全部打进安装包）"
-pip install -q -r requirements.txt "pyinstaller>=6.6"
+pip install -q -r ../requirements.txt "pyinstaller>=6.6"
 
 echo "==> 4/6 生成图标"
-python make_icon.py
+python ../src/make_icon.py assets
 
 echo "==> 5/6 打包 .app"
 rm -rf build dist

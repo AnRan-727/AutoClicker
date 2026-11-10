@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-macOS 图像识别自动点击器 —— 界面（CustomTkinter）
-识别/执行逻辑见 core.py；权限引导见 mac_permissions.py；全局快捷键见 hotkey_mac.py
+图像识别自动点击器 —— 界面（CustomTkinter），macOS 与 Windows 共用同一套代码
+识别/执行逻辑见 core.py；系统相关部分（权限、全局快捷键、字体、目录）见 platforms/
 """
 import json
 import os
@@ -20,18 +20,21 @@ from PIL import Image, ImageTk
 
 from core import (APP_NAME, APP_VERSION, TPL_DIR, CFG_PATH, ACTIONS, FAILS, MODES,
                   STEP_DEFAULT, GLOBAL_DEFAULT, resolve, imread, label_to_key, Screen, Runner)
-import mac_permissions as perms
+import platforms as plat
 
-try:
-    from hotkey_mac import GlobalHotkey, KeyRecorder, to_spec, FUNCTION_KEYS, ESC, BACKSPACE
-except Exception:  # 非 macOS / 缺少 AppKit 时仍可运行，只是没有全局热键
+perms = plat.permissions
+hk_mod = plat.hotkey                    # 当前系统的快捷键实现；None = 不支持全局快捷键
+if hk_mod is not None:
+    GlobalHotkey, KeyRecorder = hk_mod.GlobalHotkey, hk_mod.KeyRecorder
+    to_spec, FUNCTION_KEYS, ESC, BACKSPACE = hk_mod.to_spec, hk_mod.FUNCTION_KEYS, hk_mod.ESC, hk_mod.BACKSPACE
+else:
     GlobalHotkey = KeyRecorder = None
 
 ctk.set_appearance_mode("system")      # 跟随系统浅色 / 深色
 ctk.set_default_color_theme("blue")
 
 # ---------------------------------------------------------------- 设计规范
-FONT = "PingFang SC"
+FONT = plat.UI_FONT
 C = dict(
     bg=("#F2F3F7", "#16171B"),
     card=("#FFFFFF", "#212329"),
@@ -54,27 +57,7 @@ C = dict(
     err_bg=("#FDECEC", "#3F2326"),
 )
 STATUS_COLORS = {"idle": "#9AA0AA", "info": "#9AA0AA", "warn": C["warn"], "ok": C["ok"], "err": C["err"]}
-MOD_SYMBOLS = {"ctrl": "⌃", "control": "⌃", "shift": "⇧", "alt": "⌥", "option": "⌥", "opt": "⌥",
-               "cmd": "⌘", "command": "⌘"}
-
-
-KEY_SYMBOLS = {"esc": "Esc", "escape": "Esc", "enter": "↩", "return": "↩", "tab": "⇥", "space": "Space",
-               "backspace": "⌫", "delete": "⌫", "left": "←", "right": "→", "up": "↑", "down": "↓"}
-
-
-def pretty_hotkey(hk):
-    """'<ctrl>+<shift>+s' → '⌃⇧S'（按 macOS 习惯 ⌃⌥⇧⌘ 排序）"""
-    if not hk.strip():
-        return ""
-    order = {"⌃": 0, "⌥": 1, "⇧": 2, "⌘": 3}
-    mods, keys = [], []
-    for p in hk.split("+"):
-        n = p.strip().strip("<>").lower()
-        if n in MOD_SYMBOLS:
-            mods.append(MOD_SYMBOLS[n])
-        elif n:
-            keys.append(KEY_SYMBOLS.get(n, n.upper()))
-    return "".join(sorted(set(mods), key=order.get)) + "".join(keys)
+pretty_hotkey = plat.pretty_hotkey
 
 
 # ---------------------------------------------------------------- 屏幕框选
@@ -101,7 +84,7 @@ class RegionSelector(tk.Toplevel):
         rx, ry = self.winfo_rootx(), self.winfo_rooty()
         self.canvas.create_image(-rx, -ry, anchor="nw", image=self.tkimg)
         self.canvas.create_text(
-            self.lw // 2, 40, fill="yellow", font=("PingFang SC", 20, "bold"),
+            self.lw // 2, 40, fill="yellow", font=(FONT, 20, "bold"),
             text="拖动鼠标框选区域    Esc / 右键 取消")
         self.start = None
         self.rect = None
@@ -190,7 +173,7 @@ class App:
             return ctk.CTkFont(family=FONT, size=size, weight=weight)
         self.f = dict(title=F(20, "bold"), h2=F(15, "bold"), body=F(13), body_b=F(13, "bold"),
                       small=F(12), small_b=F(12, "bold"), value=F(24, "bold"),
-                      mono=ctk.CTkFont(family="Menlo", size=12))
+                      mono=ctk.CTkFont(family=plat.MONO_FONT, size=12))
 
         self.steps = []
         self.cfg = dict(GLOBAL_DEFAULT)
@@ -538,11 +521,11 @@ class App:
                 if spec is None:
                     return                      # 不支持的键，继续等待
                 if not mods and code not in FUNCTION_KEYS:
-                    self.hk_btn.configure(text="需要配合 ⌃ ⌥ ⇧ ⌘ 使用（F1~F12 可单独用）")
+                    self.hk_btn.configure(text=hk_mod.MOD_HINT)
                     return
             self.root.after(0, lambda: self._finish_record(spec))
 
-        self._recorder = KeyRecorder(on_key)
+        self._recorder = KeyRecorder(on_key, self.root)
         try:
             self._recorder.start()
         except Exception as e:
@@ -918,11 +901,10 @@ class App:
             if mode == "global":
                 self.log(f"全局停止快捷键已启用：{pretty_hotkey(hk)}（任何软件在前台都可按）")
             else:
-                self.log(f"停止快捷键 {pretty_hotkey(hk)} 仅在本软件在前台时有效："
-                         "请在 系统设置 → 隐私与安全性 → 输入监控 中打开 AutoClicker", "warn")
+                self.log(f"停止快捷键 {pretty_hotkey(hk)} 仅在本软件在前台时有效：{hk_mod.LOCAL_HINT}", "warn")
         except Exception as e:
             self.hotkey = None
-            self.log(f"快捷键「{hk}」无效：{e}", "err")
+            self.log(f"停止快捷键启用失败：{e}（可用停止按钮或鼠标甩到左上角）", "err")
 
     def _stop_hotkey(self):
         if self.hotkey:
@@ -970,11 +952,9 @@ class App:
 
 
 def _setup_logging():
-    """打包后没有控制台，把错误写到 ~/Library/Logs/AutoClicker/app.log"""
+    """打包后没有控制台，把错误写到日志文件（mac: ~/Library/Logs/AutoClicker，Win: %LOCALAPPDATA%\\AutoClicker\\logs）"""
     import logging
-    log_dir = os.path.expanduser(f"~/Library/Logs/{APP_NAME}")
-    os.makedirs(log_dir, exist_ok=True)
-    logging.basicConfig(filename=os.path.join(log_dir, "app.log"), level=logging.INFO,
+    logging.basicConfig(filename=os.path.join(plat.log_dir(), "app.log"), level=logging.INFO,
                         format="%(asctime)s %(levelname)s %(message)s")
     sys.excepthook = lambda t, v, tb: logging.error("未捕获异常", exc_info=(t, v, tb))
     return logging
@@ -983,13 +963,16 @@ def _setup_logging():
 def main():
     logging = _setup_logging()
     root = ctk.CTk()
-    logging.info("启动 v%s Python %s Tk %s", APP_VERSION, sys.version.split()[0],
+    plat.setup_process(root)
+    logging.info("启动 v%s %s Python %s Tk %s", APP_VERSION, plat.PLATFORM_NAME, sys.version.split()[0],
                  root.tk.call("info", "patchlevel"))
     root.report_callback_exception = lambda t, v, tb: logging.error("界面异常", exc_info=(t, v, tb))
     root.configure(fg_color=C["bg"])
 
     def ready():
-        App(root)
+        app = App(root)
+        for msg, level in perms.startup_notes():
+            app.log(msg, level)
         if not perms.required_granted():
             root.after(500, lambda: messagebox.showwarning(
                 "权限不足", "尚未授予屏幕录制或辅助功能权限，识别/点击可能无效。"))

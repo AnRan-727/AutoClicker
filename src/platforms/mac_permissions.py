@@ -12,7 +12,7 @@ import subprocess
 import sys
 
 IS_MAC = sys.platform == "darwin"
-BUNDLE_ID = "com.dimgg.autoclicker"
+from version import BUNDLE_ID
 _reset_done = set()
 
 
@@ -218,3 +218,8 @@ def show_permission_gate(root, on_ready, colors=None):
     refresh()
     root.lift()
     root.focus_force()
+
+
+def startup_notes():
+    """进入主界面后在日志里显示的提示（macOS 无）"""
+    return []

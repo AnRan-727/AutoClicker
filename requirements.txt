@@ -1,0 +1,11 @@
+# 共用依赖（macOS / Windows）
+pyautogui>=0.9.54
+opencv-python>=4.8
+numpy
+pillow
+customtkinter>=5.2.2
+
+# 仅 macOS：权限检测、全局快捷键（CGEventTap / NSEvent）
+pyobjc-core; sys_platform == "darwin"
+pyobjc-framework-Quartz; sys_platform == "darwin"
+pyobjc-framework-Cocoa; sys_platform == "darwin"

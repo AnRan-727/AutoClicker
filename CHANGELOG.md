@@ -2,6 +2,23 @@
 
 本项目所有版本的变更记录。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/)。
 
+## v1.3.0
+
+🪟 **新增 Windows 版**：同一套源码同时打包 macOS 与 Windows 程序，界面和功能完全一致。
+
+### ✨ 新增
+- **Windows 版本**：支持 Windows 10 / 11（64 位），提供安装版（Setup.exe）和免安装版（zip）
+- **Windows 全局停止快捷键**：任何程序在前台都能停止（默认 Ctrl+Shift+S），同样支持直接按键录制
+- **Windows 一键打包**：双击 `windows_autoclicker/build_win.bat` 即可生成安装包和免安装版
+- **管理员运行提示**：Windows 下若目标程序以管理员身份运行，日志会提示本软件也需以管理员身份运行
+- 发布流程新增 Windows 构建，Release 同时提供 macOS（Apple 芯片 / Intel）和 Windows 安装包
+
+### ⚡ 优化
+- 项目重构为「共享源码 + 平台适配层」：界面与识别逻辑只有一份（`src/`），权限、快捷键、字体、数据目录按系统自动切换
+- 版本号统一由 `src/version.py` 管理，打包脚本、安装包和界面自动读取
+- 依赖清单合并为一份，macOS 专属依赖按系统自动安装
+- 快捷键按系统习惯显示：macOS 显示 ⌃⇧S，Windows 显示 Ctrl+Shift+S
+
 ## v1.2.0
 
 🎉 **首个公开版本**：macOS 图像识别自动点击工具，识别屏幕上的按钮图片并自动点击、循环执行。

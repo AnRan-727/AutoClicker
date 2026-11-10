@@ -1,7 +1,8 @@
 # 发布方式（二选一）：
 #   1. 推送版本标签：git tag v1.3.0 && git push origin v1.3.0
 #   2. Actions 页面 → Build & Release → Run workflow，填写版本号（如 v1.2.0）
-# 流程：在 Apple 芯片和 Intel Mac 上分别打包 → 创建 GitHub Release，上传 DMG，说明取自 CHANGELOG.md
+# 流程：同一套源码（src/）分别在 Apple 芯片 Mac、Intel Mac、Windows 上打包
+#       → 创建 GitHub Release，上传 DMG / Setup.exe / 免安装 zip，说明取自 CHANGELOG.md
 # 手动运行时版本号留空 = 只打包测试，不发布
 name: Build & Release
 
@@ -27,12 +28,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-15          # Apple 芯片 arm64
-          - os: macos-15-intel    # Intel x86_64
+          - os: macos-15          # macOS Apple 芯片 arm64
+            dir: mac_autoclicker
+            python: python3
+          - os: macos-15-intel    # macOS Intel x86_64
+            dir: mac_autoclicker
+            python: python3
+          - os: windows-latest    # Windows x64
+            dir: windows_autoclicker
+            python: python
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: mac_autoclicker
+        working-directory: ${{ matrix.dir }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,16 +48,28 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build DMG
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
         env:
           CI: "1"
-          PYTHON: python3
+          PYTHON: ${{ matrix.python }}
         run: bash build_mac.command
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        env:
+          CI: "1"
+          PYTHON: ${{ matrix.python }}
+        shell: pwsh
+        run: ./build_win.ps1
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dmg-${{ matrix.os }}
-          path: mac_autoclicker/dist/*.dmg
+          name: package-${{ matrix.os }}
+          path: |
+            ${{ matrix.dir }}/dist/*.dmg
+            ${{ matrix.dir }}/dist/*-Setup.exe
+            ${{ matrix.dir }}/dist/*-portable.zip
           if-no-files-found: error
 
   release:
@@ -74,25 +94,35 @@ jobs:
           [ -s notes.md ] || echo "AutoClicker ${TAG}" > notes.md
           ARM=$(cd dist && ls *arm64*.dmg 2>/dev/null | head -1)
           X86=$(cd dist && ls *x86_64*.dmg 2>/dev/null | head -1)
+          WIN=$(cd dist && ls *-Setup.exe 2>/dev/null | head -1)
+          ZIP=$(cd dist && ls *-portable.zip 2>/dev/null | head -1)
           cat >> notes.md <<EOF
 
           ---
 
           ## 📥 下载
 
-          | 你的 Mac | 安装包 |
+          | 系统 | 安装包 |
           |---|---|
-          | Apple 芯片（M1 / M2 / M3 / M4…） | \`${ARM}\` |
-          | Intel 芯片 | \`${X86}\` |
+          | macOS · Apple 芯片（M1 / M2 / M3 / M4…） | \`${ARM}\` |
+          | macOS · Intel 芯片 | \`${X86}\` |
+          | Windows 10 / 11（64 位）· 安装版 | \`${WIN}\` |
+          | Windows 10 / 11（64 位）· 免安装版 | \`${ZIP}\` |
 
-          不确定芯片类型：点左上角  → 关于本机，查看「芯片」一栏。系统要求 **macOS 14 及以上**。
+          macOS 不确定芯片类型：点左上角  → 关于本机，查看「芯片」一栏。系统要求 **macOS 14 及以上**。
 
           ## 🛠 安装
 
+          **macOS**
           1. 双击 DMG，把 **AutoClicker** 拖进「应用程序」
           2. 首次打开如提示「无法验证开发者」或「已损坏」：系统设置 → 隐私与安全性 → 点「仍要打开」，或在终端执行
              \`xattr -cr /Applications/AutoClicker.app\`
           3. 按提示授予「屏幕录制」「辅助功能」「输入监控」三项权限
+
+          **Windows**
+          1. 运行 \`${WIN}\` 按提示安装；或解压免安装版，直接运行 \`AutoClicker.exe\`
+          2. 如出现「Windows 已保护你的电脑」：点「更多信息」→「仍要运行」
+          3. 要点击以管理员身份运行的程序时，本软件也需右键「以管理员身份运行」
           EOF
           cat notes.md
 

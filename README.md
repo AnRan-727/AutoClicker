@@ -2,10 +2,11 @@
 
 # 🎯 AutoClicker · 图像识别点击器
 
-**macOS 桌面自动化工具：识别屏幕上的按钮图片，自动点击、循环执行**
+**macOS / Windows 桌面自动化工具：识别屏幕上的按钮图片，自动点击、循环执行**
 
-![platform](https://img.shields.io/badge/platform-macOS%2014%2B-black?logo=apple)
-![arch](https://img.shields.io/badge/arch-Apple%20Silicon%20%7C%20Intel-blue)
+![macOS](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)
+![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)
+![arch](https://img.shields.io/badge/arch-Apple%20Silicon%20%7C%20Intel%20%7C%20x64-blue)
 ![python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![opencv](https://img.shields.io/badge/OpenCV-template%20matching-5C3EE8?logo=opencv&logoColor=white)
 [![release](https://img.shields.io/github/v/release/AnRan-727/AutoClicker?label=下载)](https://github.com/AnRan-727/AutoClicker/releases/latest)
@@ -35,19 +36,23 @@
 - **识别区域**：只在指定区域内识别，更快、更不容易误点
 - **多尺度匹配 / 灰度匹配**：应对缩放不一致，或提升识别速度
 - **现代化界面**：跟随系统浅色 / 深色模式，窗口缩放自适应
-- **启动权限检测**：自动检查所需系统权限并引导授权
+- **启动权限检测**（macOS）：自动检查所需系统权限并引导授权
+- **跨平台**：macOS 与 Windows 共用同一套源码，界面和功能完全一致
 
 ## 📥 下载安装
 
-前往 **[Releases](https://github.com/AnRan-727/AutoClicker/releases/latest)** 下载对应芯片的安装包：
+前往 **[Releases](https://github.com/AnRan-727/AutoClicker/releases/latest)** 下载对应系统的安装包：
 
-| 你的 Mac | 下载文件 |
+| 系统 | 下载文件 |
 |---|---|
-| Apple 芯片（M1 / M2 / M3 / M4…） | `AutoClicker-x.y.z-arm64.dmg` |
-| Intel 芯片 | `AutoClicker-x.y.z-x86_64.dmg` |
+| macOS · Apple 芯片（M1 / M2 / M3 / M4…） | `AutoClicker-x.y.z-arm64.dmg` |
+| macOS · Intel 芯片 | `AutoClicker-x.y.z-x86_64.dmg` |
+| Windows 10 / 11（64 位）· 安装版 | `AutoClicker-x.y.z-Setup.exe` |
+| Windows 10 / 11（64 位）· 免安装版 | `AutoClicker-x.y.z-win64-portable.zip` |
 
-> 不确定是哪种？点左上角  → 关于本机，看「芯片」一栏。
-> 系统要求：**macOS 14 (Sonoma) 及以上**。
+### macOS
+
+> 不确定芯片类型？点左上角  → 关于本机，看「芯片」一栏。系统要求 **macOS 14 (Sonoma) 及以上**。
 
 1. 双击 DMG，把 **AutoClicker** 拖进「应用程序」文件夹
 2. 首次打开如果提示「无法验证开发者」或「已损坏」（本软件未经 Apple 公证），任选一种方式：
@@ -56,18 +61,20 @@
      ```bash
      xattr -cr /Applications/AutoClicker.app
      ```
+3. 首次启动会显示授权页面，点「去授权」后在系统设置中打开 AutoClicker 的开关：
 
-## 🔐 系统权限
+   | 权限 | 用途 |
+   |---|---|
+   | 屏幕录制 | 截图识别按钮（授权后需重启软件生效） |
+   | 辅助功能 | 控制鼠标点击 |
+   | 输入监控 | 全局停止快捷键 |
 
-首次启动会显示授权页面，点「去授权」后在系统设置中打开 AutoClicker 的开关即可：
+### Windows
 
-| 权限 | 用途 |
-|---|---|
-| 屏幕录制 | 截图识别按钮（授权后需重启软件生效） |
-| 辅助功能 | 控制鼠标点击 |
-| 输入监控 | 全局停止快捷键 |
-
-三项都授权后会自动进入主界面。
+1. 运行 `Setup.exe` 按提示安装（默认装到当前用户，无需管理员）；或解压免安装版，直接运行 `AutoClicker.exe`
+2. 如出现「Windows 已保护你的电脑」（软件未购买代码签名证书）：点「更多信息」→「仍要运行」
+3. Windows 不需要额外授权，打开即可使用
+4. 如果要点击的程序是**以管理员身份运行**的，本软件也需要右键「以管理员身份运行」
 
 ## 🚀 使用方法
 
@@ -76,7 +83,7 @@
 3. 点「**测试识别**」：鼠标会移到识别到的位置，日志显示相似度和耗时
 4. 按需设置点击动作、偏移、等待时间和未找到时的处理
 5. 在「运行设置」中选择模式、循环次数等，点「**▶ 开始运行**」，在启动延迟内切换到目标软件
-6. 按停止快捷键（默认 ⌃⇧S）、点「停止」或把鼠标甩到屏幕左上角即可停止
+6. 按停止快捷键（默认 macOS ⌃⇧S / Windows Ctrl+Shift+S）、点「停止」或把鼠标甩到屏幕左上角即可停止
 
 ### 截图小技巧
 
@@ -97,52 +104,67 @@
 | 多尺度匹配 | 模板与屏幕缩放不一致时开启，速度会变慢 |
 | 灰度匹配 | 忽略颜色、速度更快；需要区分颜色时不要开 |
 
-配置和模板图片保存在 `~/Library/Application Support/AutoClicker/`，升级软件不会丢失。
+配置和模板图片保存在 macOS `~/Library/Application Support/AutoClicker/`、Windows `%APPDATA%\AutoClicker\`，升级软件不会丢失。
 
 ## 🛠 从源码运行 / 自行打包
 
+macOS 和 Windows 共用 `src/` 下的同一套源码，各自的打包目录只放打包配置。
+
 ```bash
 git clone git@github.com:AnRan-727/AutoClicker.git
-cd AutoClicker/mac_autoclicker
+cd AutoClicker
 
-# 直接运行（权限需授予「终端」）
-python3 -m venv .venv && source .venv/bin/activate
+# 直接运行（macOS 下权限需授予「终端」）
+python3 -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python3 autoclicker.py
-
-# 打包成 .app / .dmg（生成在 dist/ 下）
-bash build_mac.command
+python src/autoclicker.py
 ```
 
-- 打包需要 Python 3.10+ 且 Tk ≥ 8.6.10，推荐 [python.org 官方安装包](https://www.python.org/downloads/macos/)
-- 首次打包会在「登录」钥匙串创建本机签名证书，之后重装软件无需重新授权
-- 打出的包只适配打包机的芯片架构
+| 系统 | 打包方式 | 产物（`dist/` 下） |
+|---|---|---|
+| macOS | `bash mac_autoclicker/build_mac.command` | `.app` + `.dmg` |
+| Windows | 双击 `windows_autoclicker/build_win.bat` | `Setup.exe` + 免安装 `zip` |
+
+- 打包需要 Python 3.10+ 且 Tk ≥ 8.6.10，推荐 [python.org](https://www.python.org/downloads/) 官方安装包
+- PyInstaller 不能跨系统编译：macOS 包要在 Mac 上打，Windows 包要在 Windows 上打；不方便时直接用 GitHub Actions
+- macOS 首次打包会在「登录」钥匙串创建本机签名证书，之后重装软件无需重新授权
+- Windows 生成安装包需要 [Inno Setup 6](https://jrsoftware.org/isdl.php)（没有时只生成免安装版）
+
+详见 [mac_autoclicker/README.md](mac_autoclicker/README.md) 与 [windows_autoclicker/README.md](windows_autoclicker/README.md)。
 
 ### 发布新版本
 
-1. 在 [CHANGELOG.md](CHANGELOG.md) 顶部按「新增 / 优化 / 修复」写好新版本说明（标题格式 `## v1.3.0`）
-2. 二选一触发发布：
+1. 修改 `src/version.py` 中的版本号
+2. 在 [CHANGELOG.md](CHANGELOG.md) 顶部按「新增 / 优化 / 修复」写好新版本说明（标题格式 `## v1.4.0`）
+3. 二选一触发发布：
    - 推送版本标签：
      ```bash
-     git tag -a v1.3.0 -m "AutoClicker v1.3.0"
-     git push origin v1.3.0
+     git tag -a v1.4.0 -m "AutoClicker v1.4.0"
+     git push origin v1.4.0
      ```
    - 或在 GitHub → Actions → **Build & Release** → **Run workflow**，填写版本号
 
-GitHub Actions 会在 Apple 芯片和 Intel 两种 Mac 上分别打包，自动创建 Release、上传 DMG，并附上该版本的更新说明和安装说明。
+GitHub Actions 会用同一套源码分别在 Apple 芯片 Mac、Intel Mac、Windows 上打包，自动创建 Release、上传全部安装包，并附上更新说明和安装说明。
 
 ## 📁 项目结构
 
 ```
-mac_autoclicker/
-├── autoclicker.py      # 界面（CustomTkinter）
-├── core.py             # 截图、模板匹配、点击与循环调度
-├── hotkey_mac.py       # 全局快捷键（CGEventTap）与按键录制
-├── mac_permissions.py  # 系统权限检测与授权引导
-├── AutoClicker.spec    # PyInstaller 打包配置
-├── build_mac.command   # 一键打包脚本（.app + .dmg）
-├── make_icon.py        # 生成应用图标
-└── requirements.txt
+AutoClicker/
+├── src/                        # 共享源码（macOS / Windows 同一套）
+│   ├── autoclicker.py          # 界面（CustomTkinter）
+│   ├── core.py                 # 截图、模板匹配、点击与循环调度
+│   ├── version.py              # 版本号（唯一来源）
+│   ├── make_icon.py            # 生成 .icns / .ico 图标
+│   └── platforms/              # 平台适配层
+│       ├── __init__.py         # 按系统选择实现、字体、数据目录
+│       ├── mac_permissions.py  # macOS 权限检测与授权引导
+│       ├── mac_hotkey.py       # macOS 全局快捷键（CGEventTap）与按键录制
+│       ├── win_permissions.py  # Windows（无需授权，管理员提示）
+│       └── win_hotkey.py       # Windows 全局快捷键（RegisterHotKey）与按键录制
+├── mac_autoclicker/            # macOS 打包：AutoClicker.spec、build_mac.command
+├── windows_autoclicker/        # Windows 打包：AutoClicker.spec、build_win.ps1/.bat、installer.iss
+├── requirements.txt
+└── CHANGELOG.md
 ```
 
 ## ❓ 常见问题
@@ -152,26 +174,28 @@ mac_autoclicker/
 
 - 先用「测试识别」看最高相似度，适当降低阈值
 - 确认已授予「屏幕录制」权限（未授权时截图只有桌面壁纸）
-- 目标软件需在**主显示器**上
+- 目标程序需在**主显示器**上
 - 模板是在别的显示器 / 缩放比例下截的，开启「多尺度匹配」或重新截图
 </details>
 
 <details>
 <summary>鼠标不动或点击无效？</summary>
 
-检查「辅助功能」权限是否已打开；开关已打开仍无效时，在授权页点「去授权」会自动清除旧记录后重新授权。
+- macOS：检查「辅助功能」权限是否已打开；开关已打开仍无效时，在授权页点「去授权」会自动清除旧记录后重新授权
+- Windows：目标程序以管理员身份运行时，本软件也需要右键「以管理员身份运行」
 </details>
 
 <details>
 <summary>停止快捷键在其它软件里不起作用？</summary>
 
-需要「输入监控」权限。运行日志显示「全局停止快捷键已启用」即为全局生效；如显示橙色提示，请授权后重启软件。
+- macOS：需要「输入监控」权限。运行日志显示「全局停止快捷键已启用」即为全局生效；如显示橙色提示，请授权后重启软件
+- Windows：日志提示「已被其它程序占用」时，换一个快捷键组合即可
 </details>
 
 <details>
 <summary>别的 Mac 能用吗？</summary>
 
-可以，需要对应芯片的安装包、macOS 14+，首次打开按上文「下载安装」处理一次，并在该电脑上授权。
+可以。macOS 需要对应芯片的安装包和 macOS 14+，首次打开按上文处理一次并在该电脑上授权；Windows 10 / 11（64 位）直接安装即可。
 </details>
 
 ## ⚠️ 免责声明
