@@ -1,0 +1,27 @@
+# 虚拟环境
+.venv/
+.venv1/
+.venv-build/
+
+# IDE / 系统
+.idea/
+.DS_Store
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 打包产物（由 build_mac.command 生成）
+mac_autoclicker/build/
+mac_autoclicker/dist/
+mac_autoclicker/assets/
+*.dmg
+*.zip
+
+# 用户数据（运行时生成）
+mac_autoclicker/config.json
+mac_autoclicker/templates/*
+!mac_autoclicker/templates/.gitkeep
+
+# Claude 导出的临时文件
+Claude outputs/
