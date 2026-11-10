@@ -132,5 +132,9 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: AutoClicker ${{ env.TAG }}
           body_path: notes.md
-          files: dist/*.dmg
+          files: |
+            dist/*.dmg
+            dist/*-Setup.exe
+            dist/*-portable.zip
+          overwrite_files: true
           make_latest: true

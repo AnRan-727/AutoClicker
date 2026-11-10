@@ -136,7 +136,13 @@ python src/autoclicker.py
 
 1. 修改 `src/version.py` 中的版本号
 2. 在 [CHANGELOG.md](CHANGELOG.md) 顶部按「新增 / 优化 / 修复」写好新版本说明（标题格式 `## v1.4.0`）
-3. 二选一触发发布：
+3. 提交并**先推送代码**：
+   ```bash
+   git commit -am "发布 v1.4.0"
+   git push
+   ```
+   > 必须先推代码再推标签：标签指向的提交如果还不在任何分支上，GitHub 会拒绝自动创建 Release（403）
+4. 二选一触发发布：
    - 推送版本标签：
      ```bash
      git tag -a v1.4.0 -m "AutoClicker v1.4.0"
