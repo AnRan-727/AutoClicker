@@ -10,6 +10,10 @@
 ![opencv](https://img.shields.io/badge/OpenCV-template%20matching-5C3EE8?logo=opencv&logoColor=white)
 [![release](https://img.shields.io/github/v/release/AnRan-727/AutoClicker?label=下载)](https://github.com/AnRan-727/AutoClicker/releases/latest)
 
+<br>
+
+<img src="docs/screenshot.png" alt="AutoClicker 界面截图" width="900">
+
 </div>
 
 ---
